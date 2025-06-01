@@ -1,0 +1,287 @@
+{# tienda/templates/tienda/catalogo.html #}
+{% load static %} {# Necesario para poder usar {% static %} #}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Refacciones</title>
+    <style>
+        /* ======================= ESTILOS GENERALES ======================= */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ======================= CONTENEDOR PRINCIPAL ======================= */
+        .contenedor {
+            display: flex;
+            gap: 20px;               /* Separación horizontal entre catálogo y carrito */
+        }
+
+        /* ======================= CATALOGO ======================= */
+        .catalogo {
+            width: 70%;
+            /* Si quieres que el catálogo tenga un fondo diferente al body, descomenta esta línea:
+            background-color: #fff; 
+            */
+        }
+        .catalogo-lista {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;               /* Espacio entre tarjetas */
+        }
+        .catalogo-lista li {
+            width: calc(50% - 20px); /* Dos tarjetas por fila (ajusta a 33% si quieres 3 columnas) */
+        }
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.15s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #eee; /* Fondo gris si no carga imagen */
+        }
+        .card-body {
+            padding: 12px 16px;
+            flex-grow: 1;           /* Para que el botón siempre quede abajo si el contenido crece */
+            display: flex;
+            flex-direction: column;
+        }
+        .card-title {
+            margin: 0 0 6px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #222;
+        }
+        .card-price {
+            margin: 0 0 8px 0;
+            font-size: 1em;
+            font-weight: bold;
+            color: #008C4A;
+        }
+        .card-desc {
+            margin: 0 0 12px 0;
+            font-size: 0.9em;
+            color: #555;
+            flex-grow: 1;           /* Para empujar el botón hacia abajo si es texto corto */
+        }
+        .card-btn {
+            margin-top: auto;       /* Empuja el botón al final de la tarjeta */
+            text-align: center;
+        }
+        .card-btn button {
+            background-color: #008C4A;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .card-btn button:hover {
+            background-color: #006B35;
+        }
+
+        /* ======================= CARRITO ======================= */
+        .carrito {
+            width: 30%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 16px;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        .carrito h2 {
+            margin: 0 0 12px 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 6px;
+            color: #333;
+        }
+        .carrito-contenido {
+            flex-grow: 1;
+            overflow-y: auto;       /* Si hay muchos items, que aparezca scroll */
+        }
+        .carrito-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .carrito-item:last-child {
+            border-bottom: none;
+        }
+        .carrito-info {
+            flex-grow: 1;
+            font-size: 0.95em;
+            color: #444;
+        }
+        .carrito-info span.nombre {
+            font-weight: 600;
+        }
+        .carrito-info span.cantidad {
+            margin-left: 6px;
+            color: #555;
+        }
+        .carrito-info span.subtotal {
+            margin-left: 12px;
+            color: #008C4A;
+            font-weight: bold;
+        }
+        .carrito-item form {
+            margin-left: 8px;
+        }
+        .carrito-item button {
+            background-color: transparent;
+            border: none;
+            font-size: 1em;
+            color: #C00;
+            cursor: pointer;
+            transition: color 0.15s ease-in-out;
+        }
+        .carrito-item button:hover {
+            color: #900;
+        }
+        .carrito-total {
+            margin-top: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            text-align: right;
+            color: #000;
+        }
+        .carrito-footer {
+            margin-top: 12px;
+            text-align: right;
+        }
+        .carrito-footer a {
+            font-size: 0.95em;
+            color: #007BFF;
+        }
+        .carrito-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Catálogo de Refacciones</h1>
+
+    <div class="contenedor">
+
+        <!-- ======================= CATALOGO ======================= -->
+        <div class="catalogo">
+            <ul class="catalogo-lista">
+                {% for articulo in articulos %}
+                    <li>
+                        <div class="card">
+                            {# === IMAGEN (o placeholder) === #}
+                            {% if articulo.imagen %}
+                                <img src="{{ articulo.imagen.url }}" alt="Imagen de {{ articulo.nombre }}" class="card-img">
+                            {% else %}
+                                <img src="{% static 'img/sin-imagen.png' %}" alt="Sin imagen disponible" class="card-img">
+                            {% endif %}
+
+                            <div class="card-body">
+                                {# === NOMBRE DEL ARTÍCULO === #}
+                                <div class="card-title">{{ articulo.nombre }}</div>
+
+                                {# === PRECIO === #}
+                                <div class="card-price">${{ articulo.precio|floatformat:2 }}</div>
+
+                                {# === DESCRIPCIÓN (si existe) === #}
+                                {% if articulo.descripcion %}
+                                    <div class="card-desc">{{ articulo.descripcion }}</div>
+                                {% else %}
+                                    <div class="card-desc" style="color: #999; font-style: italic;">
+                                        Sin descripción disponible.
+                                    </div>
+                                {% endif %}
+
+                                {# === BOTÓN “AGREGAR AL CARRITO” === #}
+                                <div class="card-btn">
+                                    <form method="post" action="{% url 'agregar_al_carrito' articulo.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit">Agregar al carrito</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+
+        <!-- ======================= CARRITO ======================= -->
+        <div class="carrito">
+            <h2>🛒 Tu carrito</h2>
+
+            <div class="carrito-contenido">
+                {% if carrito %}
+                    {% for item in carrito %}
+                        <div class="carrito-item">
+                            <div class="carrito-info">
+                                <span class="nombre">{{ item.articulo.nombre }}</span>
+                                <span class="cantidad">x{{ item.cantidad }}</span>
+                                <span class="subtotal">${{ item.total|floatformat:2 }}</span>
+                            </div>
+                            <form method="post" action="{% url 'eliminar_del_carrito' item.articulo.id %}">
+                                {% csrf_token %}
+                                <button type="submit" title="Eliminar">✖</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>El carrito está vacío.</p>
+                {% endif %}
+            </div>
+
+            {% if carrito %}
+                <div class="carrito-total">
+                    Total: ${{ total_carrito|floatformat:2 }}
+                </div>
+                <div class="carrito-footer">
+                    <a href="{% url 'ver_carrito' %}">Ver carrito completo →</a>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</body>
+</html>

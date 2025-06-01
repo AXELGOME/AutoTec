@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito de Compras</title>
+    <style>
+        body { font-family: Arial; background-color: #f9f9f9; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        .btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-success { background-color: #28a745; color: white; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Carrito de Compras</h1>
+
+    {% if carrito %}
+    <form method="post" action="{% url 'actualizar_carrito' %}">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Artículo</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in carrito %}
+                <tr>
+                    <td>{{ item.articulo.nombre }}</td>
+                    <td>
+                        <input type="number" name="cantidad_{{ item.articulo.id }}" value="{{ item.cantidad }}" min="1">
+                    </td>
+                    <td>${{ item.articulo.precio }}</td>
+                    <td>${{ item.total }}</td>
+                    <td>
+                        <a href="{% url 'eliminar_del_carrito' item.articulo.id %}" class="btn btn-danger">Quitar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-success">Actualizar cantidades</button>
+    </form>
+
+    <h2>Total del pedido: ${{ total_carrito }}</h2>
+
+    <form method="post" action="{% url 'colocar_pedido' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Colocar pedido</button>
+    </form>
+    {% else %}
+    <p>El carrito está vacío.</p>
+    {% endif %}
+</body>
+</html>
